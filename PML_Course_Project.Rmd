@@ -106,7 +106,12 @@ The tuned model was evaluated once on the untouched 30% validation sample.
 
 ```{r validation-results}
 validation_pred <- predict(rf_fit, newdata = validation)
-cm <- confusionMatrix(validation_pred, validation$classe)
+
+# confusionMatrix requires prediction and reference to be factors
+# with exactly the same class levels.
+validation_ref <- factor(validation$classe,
+                         levels = levels(validation_pred))
+cm <- confusionMatrix(validation_pred, validation_ref)
 
 cm$table
 
