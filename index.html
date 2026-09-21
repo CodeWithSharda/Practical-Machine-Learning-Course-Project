@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predicting Exercise Manner from Wearable Sensor Data</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:980px;margin:40px auto;padding:0 24px;line-height:1.62;color:#202124}
+h1{font-size:2.15rem;margin-bottom:.2rem}
+h2{margin-top:2rem;border-bottom:1px solid #ddd;padding-bottom:.3rem}
+.subtitle{color:#5f6368;margin-bottom:2rem}
+code{background:#f4f4f4;padding:.12rem .3rem;border-radius:4px}
+pre{background:#f7f7f8;padding:14px;overflow:auto;border:1px solid #e5e7eb;border-radius:8px}
+.callout{background:#f6f8fa;border-left:4px solid #555;padding:12px 16px;margin:18px 0}
+table{border-collapse:collapse;width:100%;max-width:520px}
+th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}
+th{background:#f5f5f5}
+.small{font-size:.92rem;color:#5f6368}
+</style>
+</head>
+<body>
+<h1>Predicting Exercise Manner from Wearable Sensor Data</h1>
+<div class="subtitle">Practical Machine Learning Course Project — Rishabh Sharda</div>
+
+<h2>Objective</h2>
+<p>The goal of this project is to predict the <code>classe</code> variable from wearable accelerometer measurements collected from the belt, forearm, arm, and dumbbell of six participants performing barbell lifts. Class A represents the correct exercise execution, while classes B–E represent four different incorrect manners.</p>
+
+<h2>Data preprocessing</h2>
+<p>The original training data contain 19,622 observations and 160 variables. I removed metadata variables such as participant identifiers, timestamps, and window bookkeeping fields, followed by variables with very high missingness and near-zero-variance predictors. The resulting predictor set consists of direct sensor measurements expected to generalize to unseen observations.</p>
+
+<h2>Training strategy</h2>
+<p>I used a Random Forest classifier because the response has five classes and the sensor variables may have nonlinear and correlated relationships. The labelled data were split into a 70% development sample and a 30% untouched validation sample using stratified sampling.</p>
+
+<p>Within the development sample, I used 3-fold cross-validation to tune the Random Forest parameter <code>mtry</code>. The validation set was excluded from tuning so that it could provide a more realistic estimate of out-of-sample performance.</p>
+
+<h2>Expected out-of-sample error</h2>
+<p>The exact validation accuracy and expected out-of-sample error are computed automatically in the accompanying R Markdown file. The out-of-sample error is calculated as:</p>
+
+<pre><code>validation_pred &lt;- predict(rf_fit, newdata = validation)
+cm &lt;- confusionMatrix(validation_pred, validation$classe)
+
+accuracy &lt;- unname(cm$overall["Accuracy"])
+oos_error &lt;- 1 - accuracy</code></pre>
+
+<p>This hold-out error is preferable to training accuracy because the validation observations are not used during model fitting or cross-validation.</p>
+
+<h2>Model interpretation</h2>
+<p>The Random Forest uses measurements from multiple sensor locations. This is appropriate because incorrect lifting technique can alter movement of the torso, arm, forearm, and dumbbell in different ways. The R Markdown also produces a variable-importance plot for the 20 most influential predictors.</p>
+
+<h2>Predictions for the 20 course test cases</h2>
+<p>After model selection, the Random Forest is refitted using all labelled observations and applied to the 20 official test cases.</p>
+
+<table>
+<thead><tr><th>Problem ID</th><th>Prediction</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>B</strong></td></tr>
+<tr><td>2</td><td><strong>A</strong></td></tr>
+<tr><td>3</td><td><strong>B</strong></td></tr>
+<tr><td>4</td><td><strong>A</strong></td></tr>
+<tr><td>5</td><td><strong>A</strong></td></tr>
+<tr><td>6</td><td><strong>E</strong></td></tr>
+<tr><td>7</td><td><strong>D</strong></td></tr>
+<tr><td>8</td><td><strong>B</strong></td></tr>
+<tr><td>9</td><td><strong>A</strong></td></tr>
+<tr><td>10</td><td><strong>A</strong></td></tr>
+<tr><td>11</td><td><strong>B</strong></td></tr>
+<tr><td>12</td><td><strong>C</strong></td></tr>
+<tr><td>13</td><td><strong>B</strong></td></tr>
+<tr><td>14</td><td><strong>A</strong></td></tr>
+<tr><td>15</td><td><strong>E</strong></td></tr>
+<tr><td>16</td><td><strong>E</strong></td></tr>
+<tr><td>17</td><td><strong>A</strong></td></tr>
+<tr><td>18</td><td><strong>B</strong></td></tr>
+<tr><td>19</td><td><strong>B</strong></td></tr>
+<tr><td>20</td><td><strong>B</strong></td></tr>
+</tbody>
+</table>
+
+<div class="callout"><strong>Prediction sequence:</strong> B, A, B, A, A, E, D, B, A, A, B, C, B, A, E, E, A, B, B, B</div>
+
+<h2>Conclusion</h2>
+<p>The project uses a cleaned set of wearable-sensor predictors, Random Forest classification, 3-fold cross-validation, and an independent validation split to estimate performance on unseen observations. The final fitted model is then used to classify the 20 official test cases.</p>
+
+<h2>Reference</h2>
+<p>Velloso, E., Bulling, A., Gellersen, H., Ugulino, W., &amp; Fuks, H. (2013). <em>Qualitative Activity Recognition of Weight Lifting Exercises</em>. Proceedings of the 4th Augmented Human International Conference.</p>
+
+<p class="small">For complete reproducibility and the exact validation metrics, see <code>PML_Course_Project.Rmd</code>.</p>
+</body>
+</html>
